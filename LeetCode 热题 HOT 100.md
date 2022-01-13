@@ -121,7 +121,7 @@ int countSubstrings(char * s) {
 }
 ```
 
-### Manacher算法
+#### Manacher算法
 
 核心思想：利用回文串的对称性，记录到达最右端回文串的右端点R和中心点C，右中心点 f ( i' ) 利用左中心点 f ( i ) 赋初值，并不断更新R和C。 
 
@@ -373,6 +373,104 @@ struct TreeNode* mergeTrees(struct TreeNode* root1, struct TreeNode* root2){
     res->right = mergeTrees(root1->right, root2->right);
 
     return res;
+}
+```
+
+***
+
+# [最短无序连续子数组](https://leetcode-cn.com/problems/shortest-unsorted-continuous-subarray/)
+
+### 题目
+
+给你一个整数数组 nums ，你需要找出一个 连续子数组 ，如果对这个子数组进行升序排序，那么整个数组都会变为升序排序。
+
+请你找出符合题意的 最短 子数组，并输出它的长度。
+
+ 
+
+示例 1：
+
+```
+输入：nums = [2,6,4,8,10,9,15]
+输出：5
+解释：你只需要对 [6, 4, 8, 10, 9] 进行升序排序，那么整个表都会变为升序排序。
+```
+
+示例 2：
+
+```
+输入：nums = [1,2,3,4]
+输出：0
+```
+
+示例 3：
+
+```
+输入：nums = [1]
+输出：0
+```
+
+**提示：**
+
+- `1 <= nums.length <= 104`
+- `-105 <= nums[i] <= 105`
+
+### 题解
+
+#### 双指针
+
+将原数组排序，找到排序数组和原数组第一个不一样的左端和右端，这就是我们要找的子数组。
+
+```c
+int cmpfunc (const void * a, const void * b)
+{
+   return ( *(int*)a - *(int*)b );
+}
+
+int findUnsortedSubarray(int* nums, int numsSize) {
+    int tmp[numsSize];
+    for (int i = 0; i < numsSize; i++) {
+        tmp[i] = nums[i];
+    }
+    qsort(tmp, numsSize, sizeof(int), cmpfunc);
+
+    int l = 0, r = numsSize - 1;
+    while (tmp[l] == nums[l] && l < r) {
+        l++;
+    }
+    while (tmp[r] == nums[r] && l < r) {
+        r--;
+    }
+
+    if (l == r) {
+        return 0;
+    }
+
+    return r - l + 1;
+}
+```
+
+#### 一次遍历
+
+一次遍历从两头进行。设max为一次遍历左端已遍历部分最大值，min为右端最小值。通过一次遍历，维护max和min：当左端当前元素小于max，则更新right；右端当前元素大于min，则更新left。最后`r - l + 1`就是答案。当r == -1（l == -1）时表示数组已有序，返回0。
+
+```c
+int findUnsortedSubarray(int* nums, int numsSize) {
+    int max = INT_MIN, r = -1;
+    int min = INT_MAX, l = -1;
+    for (int i = 0; i < numsSize; i++) {
+        if (nums[i] < max) {
+            r = i;
+        } else {
+            max = nums[i];
+        }
+        if (nums[numsSize - i - 1] > min) {
+            l = numsSize - i - 1;
+        } else {
+            min = nums[numsSize - i - 1];
+        }
+    }
+    return r == -1 ? 0 : r - l + 1;
 }
 ```
 
